@@ -1,0 +1,2 @@
+# file is a prod property file example
+spring.h2.console.enabled=false
