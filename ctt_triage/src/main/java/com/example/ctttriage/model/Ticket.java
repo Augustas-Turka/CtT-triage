@@ -13,9 +13,6 @@ public class Ticket {
     @Column(nullable = false, unique = true)
     private String title;
 
-    @Column(nullable = false)//in case of GDPR or similar, anon/deleted user
-    private String author;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TicketCategory category;
