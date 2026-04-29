@@ -11,7 +11,7 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne
+    @OneToOne//can multiple tickets originate from one comment?
     @JoinColumn(name = "source_comments_id", nullable = false)
     private Comment sourceComment;
 
@@ -26,7 +26,7 @@ public class Ticket {
     @Column(nullable = false)
     private TicketPriority priority;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, columnDefinition = "TEXT")//max summary length?
     private String summary;
 
 }
