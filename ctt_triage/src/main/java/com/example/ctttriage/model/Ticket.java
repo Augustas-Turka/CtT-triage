@@ -11,6 +11,10 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
+    @OneToOne
+    @JoinColumn(name = "source_comments_id", nullable = false)
+    private Comment sourceComment;
+
     @Column(nullable = false, unique = true)
     private String title;
 
