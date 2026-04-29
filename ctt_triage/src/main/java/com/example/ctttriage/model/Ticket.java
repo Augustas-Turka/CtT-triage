@@ -1,6 +1,7 @@
 package com.example.ctttriage.model;
 
 import jakarta.persistence.*;
+import java.util.UUID;
 
 @Entity
 @Table(name = "tickets")
@@ -8,7 +9,7 @@ public class Ticket {
  
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private long id;
+    private UUID id;
 
     @Column(nullable = false, unique = true)
     private String title;
