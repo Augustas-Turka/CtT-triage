@@ -26,7 +26,7 @@ public class Ticket {
     @Column(nullable = false)
     private TicketPriority priority;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String summary;
 
 }
