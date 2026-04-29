@@ -1,5 +1,6 @@
 package com.example.ctttriage.service;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -22,9 +23,15 @@ public class TicketService {
         return mapTicketToTicketDetailResponse(ticket);
     }
 
+    public List<TicketSummaryResponse> getAllTickets () {
+
+        return ticketRepository.findAll().stream().map(this::mapTicketToTicketSummaryResponse).toList();
+    }
+
     private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
 
         TicketDetailResponse response = new TicketDetailResponse();
+        //response.setId(ticket.getId());   not needed since using the id of this ticket to fetch this ticket?
         response.setTitle(ticket.getTitle());
         response.setCategory(ticket.getCategory());
         response.setPriority(ticket.getPriority());
@@ -39,7 +46,17 @@ public class TicketService {
         response.setId(comment.getId());
         response.setBody(comment.getBody());
         return response;
-}
+    }
+
+    private TicketSummaryResponse mapTicketToTicketSummaryResponse(Ticket ticket) {
+
+        TicketSummaryResponse response = new TicketSummaryResponse();
+        response.setTitle(ticket.getTitle());
+        response.setCategory(ticket.getCategory());
+        response.setPriority(ticket.getPriority());
+        response.setSummary(ticket.getSummary());
+        return response;
+    } 
     
     
 }
