@@ -17,6 +17,8 @@ public class TicketService {
 
     private final TicketRepository ticketRepository;
 
+    //TODO: add update and delete methods to cover crud?
+
     public TicketDetailResponse getTicket (UUID id) {
 
         Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new RuntimeException("Ticket not found"));
@@ -34,6 +36,8 @@ public class TicketService {
         return mapTicketToTicketSummaryResponse(newTicket);
     }
 
+
+//mapping methods
     private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
 
         TicketDetailResponse response = new TicketDetailResponse();
