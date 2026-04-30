@@ -23,6 +23,14 @@ public class CommentService {
         return commentRepository.findAll().stream().map(this::mapCommentToCommentResponse).toList();
     }
 
+    // public List<Ticket> createTickets(Comment comment) {
+    //     //api call, give comment, get json
+
+    //     //response? if no ticket, return, if yes- get json
+
+    //     //mapping call, iterate over json and save each ticket
+    // }
+
 //mapping methods
 
     private CommentResponse mapCommentToCommentResponse(Comment comment) {
