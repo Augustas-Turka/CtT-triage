@@ -28,6 +28,12 @@ public class TicketService {
         return ticketRepository.findAll().stream().map(this::mapTicketToTicketSummaryResponse).toList();
     }
 
+    //will almost 100% change, since return should probably be a list of tickets in case 1 comment produced more than 1 ticket    
+    public TicketSummaryResponse createTicket(Ticket ticket) {
+        Ticket newTicket = ticketRepository.save(ticket);
+        return mapTicketToTicketSummaryResponse(newTicket);
+    }
+
     private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
 
         TicketDetailResponse response = new TicketDetailResponse();
