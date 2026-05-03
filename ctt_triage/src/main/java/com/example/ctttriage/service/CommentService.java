@@ -9,8 +9,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import io.swagger.v3.core.util.Json;
-
 import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.repositories.TicketRepository;
 import com.google.gson.JsonParser;
