@@ -1,6 +1,7 @@
 package com.example.ctttriage.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.example.ctttriage.dto.external.ExternalTicketData;
 import com.example.ctttriage.model.Comment;
@@ -13,10 +14,16 @@ import com.google.gson.JsonParser;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +41,24 @@ public class CommentAnalysisService {
     @Value("${ticket.threshold}")
     private double ticketThreshold;
 
+    private final RestTemplate restTemplate = new RestTemplate();
 
     public boolean shouldCommentBecomeTicket (Comment comment) {
-        //api call to decide if comment should become a ticket.
-        return true;
+
+        Map<String, Object> requestBody = Map.of(
+            "inputs", comment,
+            "parameters", Map.of("candidate_labels", "support ticket,other")
+        );
+        
+            ResponseEntity<Map> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), Map.class);
+            List<Double> scores = (List<Double>) response.getBody().get("scores");
+            if (scores.get(0) >= ticketThreshold){//the first score will be for "support ticket"
+                return true;
+            }
+            else{
+                return false;
+            }
+        
     }
 
     public List<ExternalTicketData> buildTicketList(Comment comment) {
@@ -51,6 +72,15 @@ public class CommentAnalysisService {
         tickets.add(mapJsonResponseToExternalTicketData(json));
     }
     return tickets;
+    }
+
+    //helpers
+
+    private HttpEntity<Map> buildEntity(Map requestBody) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + apiKey);
+        return new HttpEntity<>(requestBody, headers);
     }
 
     //mapping
