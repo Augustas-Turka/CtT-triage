@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.model.*;//all for now
 import com.example.ctttriage.dto.*;//all objects for now
+import com.example.ctttriage.dto.external.ExternalTicketData;
 
 
 import lombok.RequiredArgsConstructor;
