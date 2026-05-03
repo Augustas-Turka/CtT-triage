@@ -50,14 +50,10 @@ public class CommentAnalysisService {
             "parameters", Map.of("candidate_labels", "support ticket,other")
         );
         
-            ResponseEntity<Map> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), Map.class);
-            List<Double> scores = (List<Double>) response.getBody().get("scores");
-            if (scores.get(0) >= ticketThreshold){//the first score will be for "support ticket"
-                return true;
-            }
-            else{
-                return false;
-            }
+        ResponseEntity<Map> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), Map.class);
+        List<Double> scores = (List<Double>) response.getBody().get("scores");
+        if (scores.get(0) >= ticketThreshold){return true;}//the first score will be for "support ticket"
+            else{return false;}
         
     }
 
