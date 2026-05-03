@@ -40,7 +40,8 @@ public class CommentService {
     }
 
     //TODO: update return type
-    public void createTickets(Comment comment) {
+    public void createTickets(CommentReviewRequest request) {
+        Comment comment = mapCommentRequestToComment(request);
         if(shouldCommentBecomeTicket(comment)) {//prompt something like "does this comment contain something that should become a technical ticket", no matter how many tickets
             List<ExternalTicketData> tickets = buildTicketList(comment);
             tickets.forEach(ticket -> {
@@ -100,6 +101,12 @@ public class CommentService {
         ticket.setPriority(data.getPriority());
 
         return ticket;
-}
+    }
+
+    private Comment mapCommentRequestToComment (CommentReviewRequest request){
+        Comment comment = new Comment();
+        comment.setBody(request.getBody());
+        return comment;
+    }
     
 }
