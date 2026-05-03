@@ -3,6 +3,9 @@ package com.example.ctttriage.service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import com.google.gson.JsonObject;
+
+import io.swagger.v3.core.util.Json;
 
 import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.model.*;//all for now
@@ -39,6 +42,17 @@ public class CommentService {
         CommentResponse response = new CommentResponse();
         response.setId(comment.getId());
         response.setBody(comment.getBody());
+        return response;
+    }
+
+    private ExternalTicketData mapJsonResponseToExternalTicketData (JsonObject json) {
+
+        ExternalTicketData response = new ExternalTicketData();
+        response.setTitle(json.get("title").getAsString());
+        response.setSummary(json.get("summary").getAsString());
+        response.setCategory(TicketCategory.valueOf(json.get("category").getAsString()));
+        response.setPriority(TicketPriority.valueOf(json.get("priority").getAsString()));
+
         return response;
     }
     
