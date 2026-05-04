@@ -46,13 +46,13 @@ public class CommentAnalysisService {
     private double ticketThreshold;
 
     private static final String PROMPT = """
-        You review comments that have to become support tickets.
-        For every ticket that can be created from the comment (one or more),
-            you will have to decide on it's category, priority and generate a title and a short summary describing the issue.
-        The categories to pick from- BUG | FEATURE | BILLING | ACCOUNT | OTHER
-        The priorities to pick from- LOW | MEDIUM | HIGH | CRITICAL
-        Respond ONLY with a JSON array- no additional text or symbols
-        [{ "title": "...", "category": "BUG | FEATURE | BILLING | ACCOUNT | OTHER", "priority": "LOW | MEDIUM | HIGH | CRITICAL", "summary": "..." }]
+        You review user comments and convert them into support tickets.
+        A single comment may contain multiple separate issues - create one ticket per issue.
+        For each ticket, assign a category, priority, and generate a short title and summary.
+        Categories: BUG | FEATURE | BILLING | ACCOUNT | OTHER
+        Priorities: LOW | MEDIUM | HIGH | CRITICAL
+        Respond ONLY with a valid JSON array. No explanation, no markdown, no code blocks.
+        Example format: [{ "title": "...", "category": "BUG", "priority": "HIGH", "summary": "..." }]
         Comment: "%s"
         """;
 
@@ -63,7 +63,7 @@ public class CommentAnalysisService {
 
         Map<String, Object> requestBody = Map.of(
             "inputs", comment.getBody(),
-            "parameters", Map.of("candidate_labels", "support ticket,other")
+            "parameters", Map.of("candidate_labels", "this user has a specific technical problem or request")
         );
 
         log.debug("Request body: {}", requestBody);
@@ -71,14 +71,12 @@ public class CommentAnalysisService {
         ResponseEntity<List> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), List.class);
 
         List<Map<String, Object>> results = response.getBody();
-        String topLabel = (String) results.get(0).get("label");
-        double topScore = (Double) results.get(0).get("score");
+        String Label = (String) results.get(0).get("label");
+        double Score = (Double) results.get(0).get("score");
 
-        log.debug("Top label: {}, score: {}", topLabel, topScore);
+        log.debug("label: {}, score: {}", Label, Score);
 
-        if ((topLabel.equals("support ticket")) && (topScore > 0.75)){
-            return true;
-        }
+        if (Score >= ticketThreshold){return true;}
 
         return false;
         
@@ -88,20 +86,26 @@ public class CommentAnalysisService {
 
     String filledPrompt = String.format(PROMPT, comment.getBody());
 
-    Map<String, Object> requestBody = new HashMap<>();
-    requestBody.put("inputs", filledPrompt);
-    requestBody.put("parameters", Map.of(
-        "max_new_tokens", 500,
-        "return_full_text", false
-    ));
-
-    ResponseEntity<List> response = restTemplate.postForEntity(
-    generatorUrl, buildEntity(requestBody), List.class
+    Map<String, Object> requestBody = Map.of(
+        "model", "Qwen/Qwen3-0.6B:featherless-ai",
+        "messages", List.of(
+            Map.of("role", "user", "content", filledPrompt)
+        )
     );
-    Map<String, Object> result = (Map<String, Object>) response.getBody().get(0);
-    String apiResponse = (String) result.get("generated_text");
 
-    log.debug("Generator raw response: {}", apiResponse);
+   ResponseEntity<Map> generatorResponse = restTemplate.postForEntity(
+    generatorUrl, buildEntity(requestBody), Map.class
+    );
+    log.debug("Generator raw response: {}", generatorResponse.getBody());
+
+
+    List choices = (List) generatorResponse.getBody().get("choices");
+    Map message = (Map) ((Map) choices.get(0)).get("message");
+    String apiResponse = (String) message.get("content");
+    log.debug("Extracted JSON string: {}", apiResponse);
+
+    
+    
     JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
 
     List<ExternalTicketData> tickets = new ArrayList<>();
