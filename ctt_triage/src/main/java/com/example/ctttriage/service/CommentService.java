@@ -20,8 +20,9 @@ import com.example.ctttriage.dto.external.ExternalTicketData;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -43,9 +44,15 @@ public class CommentService {
 
     //TODO: update return type
     public void createTickets(CommentReviewRequest request) {
+
         Comment comment = mapCommentRequestToComment(request);
-        if(analysisService.shouldCommentBecomeTicket(comment)) {//prompt something like "does this comment contain something that should become a technical ticket", no matter how many tickets
+
+        // using a zero-shot classification model to decide if comment should become a ticket. In theory, should save on api costs over time. See README.
+        if(analysisService.shouldCommentBecomeTicket(comment)) {
+            log.debug("Comment {} should become a ticket", comment.getBody());
+
             List<ExternalTicketData> tickets = analysisService.buildTicketList(comment);
+
             tickets.forEach(ticket -> {
                 Ticket entity = mapExternalTicketDataToTicket(ticket);
                 ticketRepository.save(entity);
