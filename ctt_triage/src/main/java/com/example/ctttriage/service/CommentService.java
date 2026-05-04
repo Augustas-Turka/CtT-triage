@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 
 import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.repositories.TicketRepository;
+import com.example.ctttriage.service.CommentAnalysisService;
 import com.google.gson.JsonParser;
 import com.example.ctttriage.model.*;//all for now
 import com.example.ctttriage.dto.*;//all objects for now
@@ -19,14 +20,16 @@ import com.example.ctttriage.dto.external.ExternalTicketData;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final TicketRepository ticketRepository;
+    private final CommentAnalysisService analysisService;
 
     public List<CommentResponse> getAllComments () {
 
@@ -41,35 +44,23 @@ public class CommentService {
 
     //TODO: update return type
     public void createTickets(CommentReviewRequest request) {
+
         Comment comment = mapCommentRequestToComment(request);
-        if(shouldCommentBecomeTicket(comment)) {//prompt something like "does this comment contain something that should become a technical ticket", no matter how many tickets
-            List<ExternalTicketData> tickets = buildTicketList(comment);
+
+        // using a zero-shot classification model to decide if comment should become a ticket. In theory, should save on api costs over time. See README.
+        if(analysisService.shouldCommentBecomeTicket(comment)) {
+            log.debug("Comment {} should become a ticket", comment.getBody());
+
+            Comment savedComment=commentRepository.save(comment);//saving comment to db to assign and id. if not ticket, comment wont be saved.
+
+            List<ExternalTicketData> tickets = analysisService.buildTicketList(savedComment);
+
             tickets.forEach(ticket -> {
-                Ticket entity = mapExternalTicketDataToTicket(ticket);
+                Ticket entity = mapExternalTicketDataToTicket(ticket, savedComment);
                 ticketRepository.save(entity);
         });
         };
     }
-
-//helper methods
-
-    private boolean shouldCommentBecomeTicket (Comment comment) {
-        //api call to decide if comment should become a ticket.
-        return true;
-    }
-
-    private List<ExternalTicketData> buildTicketList(Comment comment) {
-
-    String apiResponse = "api response";//TODO: placeholder
-    JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
-
-    List<ExternalTicketData> tickets = new ArrayList<>();
-    for (JsonElement element : jsonArray) {
-        JsonObject json = element.getAsJsonObject();
-        tickets.add(mapJsonResponseToExternalTicketData(json));
-    }
-    return tickets;
-}
 
 //mapping methods
 
@@ -81,24 +72,16 @@ public class CommentService {
         return response;
     }
 
-    private ExternalTicketData mapJsonResponseToExternalTicketData (JsonObject json) {
+    
 
-        ExternalTicketData response = new ExternalTicketData();
-        response.setTitle(json.get("title").getAsString());
-        response.setSummary(json.get("summary").getAsString());
-        response.setCategory(TicketCategory.valueOf(json.get("category").getAsString()));
-        response.setPriority(TicketPriority.valueOf(json.get("priority").getAsString()));
-
-        return response;
-    }
-
-    private Ticket mapExternalTicketDataToTicket(ExternalTicketData data) {
+    private Ticket mapExternalTicketDataToTicket(ExternalTicketData data, Comment comment) {
 
         Ticket ticket = new Ticket();
         ticket.setTitle(data.getTitle());
         ticket.setSummary(data.getSummary());
         ticket.setCategory(data.getCategory());
         ticket.setPriority(data.getPriority());
+        ticket.setSourceComment(comment);
 
         return ticket;
     }
