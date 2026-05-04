@@ -87,7 +87,7 @@ public class CommentAnalysisService {
     String filledPrompt = String.format(PROMPT, comment.getBody());
 
     Map<String, Object> requestBody = Map.of(
-        "model", "Qwen/Qwen3-0.6B:featherless-ai",
+        "model", "Qwen/Qwen2.5-7B-Instruct:together",
         "messages", List.of(
             Map.of("role", "user", "content", filledPrompt)
         )
