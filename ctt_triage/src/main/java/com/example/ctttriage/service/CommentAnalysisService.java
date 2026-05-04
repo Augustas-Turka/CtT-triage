@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public class CommentAnalysisService {
 
         log.debug("Top label: {}, score: {}", topLabel, topScore);
 
-        if ((topLabel == "support ticket") && (topScore > 0.75)){
+        if ((topLabel.equals("support ticket")) && (topScore > 0.75)){
             return true;
         }
 
@@ -85,7 +86,21 @@ public class CommentAnalysisService {
 
     public List<ExternalTicketData> buildTicketList(Comment comment) {
 
-    String apiResponse = "api response";//TODO: placeholder
+    String filledPrompt = String.format(PROMPT, comment.getBody());
+
+    Map<String, Object> requestBody = new HashMap<>();
+    requestBody.put("inputs", filledPrompt);
+    requestBody.put("parameters", Map.of(
+        "max_new_tokens", 500,
+        "return_full_text", false
+    ));
+
+    ResponseEntity<List> response = restTemplate.postForEntity(
+    generatorUrl, buildEntity(requestBody), List.class
+    );
+    Map<String, Object> result = (Map<String, Object>) response.getBody().get(0);
+    String apiResponse = (String) result.get("generated_text");
+
     log.debug("Generator raw response: {}", apiResponse);
     JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
 
