@@ -46,11 +46,12 @@ public class CommentService {
     public void createTickets(CommentReviewRequest request) {
 
         Comment comment = mapCommentRequestToComment(request);
-        commentRepository.save(comment);
 
         // using a zero-shot classification model to decide if comment should become a ticket. In theory, should save on api costs over time. See README.
         if(analysisService.shouldCommentBecomeTicket(comment)) {
             log.debug("Comment {} should become a ticket", comment.getBody());
+
+            comment=commentRepository.save(comment);//saving comment to db to assign and id. if not ticket, comment wont be saved.
 
             List<ExternalTicketData> tickets = analysisService.buildTicketList(comment);
 
