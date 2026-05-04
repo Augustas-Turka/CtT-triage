@@ -51,12 +51,12 @@ public class CommentService {
         if(analysisService.shouldCommentBecomeTicket(comment)) {
             log.debug("Comment {} should become a ticket", comment.getBody());
 
-            comment=commentRepository.save(comment);//saving comment to db to assign and id. if not ticket, comment wont be saved.
+            Comment savedComment=commentRepository.save(comment);//saving comment to db to assign and id. if not ticket, comment wont be saved.
 
-            List<ExternalTicketData> tickets = analysisService.buildTicketList(comment);
+            List<ExternalTicketData> tickets = analysisService.buildTicketList(savedComment);
 
             tickets.forEach(ticket -> {
-                Ticket entity = mapExternalTicketDataToTicket(ticket);
+                Ticket entity = mapExternalTicketDataToTicket(ticket, savedComment);
                 ticketRepository.save(entity);
         });
         };
@@ -74,13 +74,14 @@ public class CommentService {
 
     
 
-    private Ticket mapExternalTicketDataToTicket(ExternalTicketData data) {
+    private Ticket mapExternalTicketDataToTicket(ExternalTicketData data, Comment comment) {
 
         Ticket ticket = new Ticket();
         ticket.setTitle(data.getTitle());
         ticket.setSummary(data.getSummary());
         ticket.setCategory(data.getCategory());
         ticket.setPriority(data.getPriority());
+        ticket.setSourceComment(comment);
 
         return ticket;
     }
