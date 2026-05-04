@@ -47,10 +47,11 @@ public class CommentAnalysisService {
     private static final String PROMPT = """
         You review comments that have to become support tickets.
         For every ticket that can be created from the comment (one or more),
-            you will have to decide on it's category and generate a short summary describing the issue.
-        The categories to pick from- BUG | FEATURE | BILLING | ACCOUNT | OTHER 
+            you will have to decide on it's category, priority and generate a title and a short summary describing the issue.
+        The categories to pick from- BUG | FEATURE | BILLING | ACCOUNT | OTHER
+        The priorities to pick from- LOW | MEDIUM | HIGH | CRITICAL
         Respond ONLY with a JSON array- no additional text or symbols
-        [{ "category": "BUG | FEATURE | BILLING | ACCOUNT | OTHER", "summary": "..." }]
+        [{ "title": "...", "category": "BUG | FEATURE | BILLING | ACCOUNT | OTHER", "priority": "LOW | MEDIUM | HIGH | CRITICAL", "summary": "..." }]
         Comment: "%s"
         """;
 
