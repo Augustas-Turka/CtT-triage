@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentAnalysisService {
@@ -41,16 +43,33 @@ public class CommentAnalysisService {
     @Value("${ticket.threshold}")
     private double ticketThreshold;
 
+    private static final String PROMPT = """
+        You review comments that have to become support tickets.
+        For every ticket that can be created from the comment (one or more),
+            you will have to decide on it's category and generate a short summary describing the issue.
+        The categories to pick from- BUG | FEATURE | BILLING | ACCOUNT | OTHER 
+        Respond ONLY with a JSON array- no additional text or symbols
+        [{ "category": "BUG | FEATURE | BILLING | ACCOUNT | OTHER", "summary": "..." }]
+        Comment: "%s"
+        """;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public boolean shouldCommentBecomeTicket (Comment comment) {
+        log.debug("Checking if comment [id={}] should become a ticket. Body: '{}'", comment.getId(), comment.getBody());
 
         Map<String, Object> requestBody = Map.of(
-            "inputs", comment,
+            "inputs", comment.getBody(),
             "parameters", Map.of("candidate_labels", "support ticket,other")
         );
+
+        log.debug("Request body: {}", requestBody);
         
         ResponseEntity<Map> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), Map.class);
+
+        log.debug("Decider response status: {}", response.getStatusCode());
+        log.debug("Decider response body: {}", response.getBody());
+        
         List<Double> scores = (List<Double>) response.getBody().get("scores");
         if (scores.get(0) >= ticketThreshold){return true;}//the first score will be for "support ticket"
             else{return false;}
@@ -60,6 +79,7 @@ public class CommentAnalysisService {
     public List<ExternalTicketData> buildTicketList(Comment comment) {
 
     String apiResponse = "api response";//TODO: placeholder
+    log.debug("Generator raw response: {}", apiResponse);
     JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
 
     List<ExternalTicketData> tickets = new ArrayList<>();
