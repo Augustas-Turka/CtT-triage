@@ -14,7 +14,7 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToOne//can multiple tickets originate from one comment?
+    @ManyToOne//In case multiple tickets originate form one comment
     @JoinColumn(name = "source_comments_id", nullable = false)
     private Comment sourceComment;
 
