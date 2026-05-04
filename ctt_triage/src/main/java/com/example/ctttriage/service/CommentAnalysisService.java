@@ -20,6 +20,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -65,14 +66,19 @@ public class CommentAnalysisService {
 
         log.debug("Request body: {}", requestBody);
         
-        ResponseEntity<Map> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), Map.class);
+        ResponseEntity<List> response = restTemplate.postForEntity(deciderUrl, buildEntity(requestBody), List.class);
 
-        log.debug("Decider response status: {}", response.getStatusCode());
-        log.debug("Decider response body: {}", response.getBody());
-        
-        List<Double> scores = (List<Double>) response.getBody().get("scores");
-        if (scores.get(0) >= ticketThreshold){return true;}//the first score will be for "support ticket"
-            else{return false;}
+        List<Map<String, Object>> results = response.getBody();
+        String topLabel = (String) results.get(0).get("label");
+        double topScore = (Double) results.get(0).get("score");
+
+        log.debug("Top label: {}, score: {}", topLabel, topScore);
+
+        if ((topLabel == "support ticket") && (topScore > 0.75)){
+            return true;
+        }
+
+        return false;
         
     }
 
@@ -95,6 +101,7 @@ public class CommentAnalysisService {
     private HttpEntity<Map> buildEntity(Map requestBody) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
         headers.set("Authorization", "Bearer " + apiKey);
         return new HttpEntity<>(requestBody, headers);
     }
