@@ -63,7 +63,7 @@ public class CommentAnalysisService {
 
         Map<String, Object> requestBody = Map.of(
             "inputs", comment.getBody(),
-            "parameters", Map.of("candidate_labels", "this user has a specific technical problem or request")
+            "parameters", Map.of("candidate_labels", "this is an issue or request someone is having with the service")
         );
 
         log.debug("Request body: {}", requestBody);
