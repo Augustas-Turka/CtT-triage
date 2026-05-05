@@ -50,7 +50,7 @@ public class CommentAnalysisService {
         A single comment may contain multiple separate issues - create one ticket per issue.
         For each ticket, assign a category, priority, and generate a short title and summary.
         Categories: BUG | FEATURE | BILLING | ACCOUNT | OTHER
-        Priorities: LOW | MEDIUM | HIGH | CRITICAL
+        Priorities: LOW | MEDIUM | HIGH
         Respond ONLY with a valid JSON array. No explanation, no markdown, no code blocks.
         Example format: [{ "title": "...", "category": "BUG", "priority": "HIGH", "summary": "..." }]
         Comment: "%s"
