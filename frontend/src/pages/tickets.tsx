@@ -30,7 +30,7 @@ export function TicketsPage() {
             {tickets.map(t => (
               <tr key={t.id}>
                 <td style={td}>{t.id}</td>
-                <td style={td}>{t.sourceCommentId}</td>
+                <td style={td}>{t.sourceComment.id}</td>
                 <td style={td}>{t.title}</td>
                 <td style={td}>{t.priority}</td>
                 <td style={td}>{t.category}</td>
