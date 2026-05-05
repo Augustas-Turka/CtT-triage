@@ -66,7 +66,7 @@ public class CommentService {
             return ticketResponses;
         }
 
-        return null;
+        return List.of(); //As indicator that no tickets were crated
     }
 
 //mapping methods
