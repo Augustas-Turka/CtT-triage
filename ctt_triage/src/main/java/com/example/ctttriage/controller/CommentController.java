@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.example.ctttriage.dto.CommentResponse;
 import com.example.ctttriage.dto.CommentReviewRequest;
+import com.example.ctttriage.dto.TicketDetailResponse;
 import com.example.ctttriage.service.CommentService;
 
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,15 @@ public class CommentController {
         return ResponseEntity.ok(commentService.getAllComments());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}")    
     public ResponseEntity<CommentResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(commentService.getComment(id));
     }
     
-    @PostMapping //TODO: decide on response- return created tickets? boolean?
-    public ResponseEntity<?> create(@RequestBody CommentReviewRequest request) {
-        commentService.createTickets(request);//void at the moment, will be changed to bool/responseentity
-        return (ResponseEntity.ok(true));
-    }
+    @PostMapping
+    public ResponseEntity<List<TicketDetailResponse>> create(@RequestBody CommentReviewRequest request) {
+    List<TicketDetailResponse> tickets = commentService.createTickets(request);
+    return ResponseEntity.ok(tickets);
+}
     
 }

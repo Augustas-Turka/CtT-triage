@@ -17,6 +17,7 @@ import com.example.ctttriage.model.Comment;
 import com.example.ctttriage.model.Ticket;
 import com.example.ctttriage.dto.CommentResponse;
 import com.example.ctttriage.dto.CommentReviewRequest;
+import com.example.ctttriage.dto.TicketDetailResponse;
 import com.example.ctttriage.dto.external.ExternalTicketData;
 
 
@@ -43,8 +44,7 @@ public class CommentService {
         return mapCommentToCommentResponse(comment);
     }
 
-    //TODO: update return type
-    public void createTickets(CommentReviewRequest request) {
+    public List<TicketDetailResponse> createTickets(CommentReviewRequest request) {
 
         Comment comment = mapCommentRequestToComment(request);
 
@@ -56,11 +56,17 @@ public class CommentService {
 
             List<ExternalTicketData> tickets = analysisService.buildTicketList(savedComment);
 
-            tickets.forEach(ticket -> {
+            List<TicketDetailResponse> ticketResponses = new ArrayList<>();
+                tickets.forEach(ticket -> {
                 Ticket entity = mapExternalTicketDataToTicket(ticket, savedComment);
-                ticketRepository.save(entity);
-        });
-        };
+                Ticket saved = ticketRepository.save(entity);
+                ticketResponses.add(mapTicketToTicketDetailResponse(saved));
+            });
+
+            return ticketResponses;
+        }
+
+        return null;
     }
 
 //mapping methods
@@ -73,6 +79,17 @@ public class CommentService {
         return response;
     }
 
+    private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
+
+        TicketDetailResponse response = new TicketDetailResponse();
+        response.setId(ticket.getId());
+        response.setTitle(ticket.getTitle());
+        response.setCategory(ticket.getCategory());
+        response.setPriority(ticket.getPriority());
+        response.setSummary(ticket.getSummary());
+        response.setSourceComment(mapCommentToCommentResponse(ticket.getSourceComment()));
+        return response;
+    }
     
 
     private Ticket mapExternalTicketDataToTicket(ExternalTicketData data, Comment comment) {
