@@ -2,7 +2,6 @@ package com.example.ctttriage.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -36,7 +35,7 @@ public class CommentService {
         return commentRepository.findAll().stream().map(this::mapCommentToCommentResponse).toList();
     }
 
-    public CommentResponse getComment (UUID id) {
+    public CommentResponse getComment (Long id) {
 
         Comment comment = commentRepository.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
         return mapCommentToCommentResponse(comment);

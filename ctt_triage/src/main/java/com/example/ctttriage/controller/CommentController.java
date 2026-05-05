@@ -1,7 +1,6 @@
 package com.example.ctttriage.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +26,7 @@ public class CommentController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponse> getById(@PathVariable UUID id) {
+    public ResponseEntity<CommentResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(commentService.getComment(id));
     }
     

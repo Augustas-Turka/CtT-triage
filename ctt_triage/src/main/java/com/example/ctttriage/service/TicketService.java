@@ -1,7 +1,6 @@
 package com.example.ctttriage.service;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ public class TicketService {
 
     //TODO: add update and delete methods to cover crud?
 
-    public TicketDetailResponse getTicket (UUID id) {
+    public TicketDetailResponse getTicket (Long id) {
 
         Ticket ticket = ticketRepository.findById(id).orElseThrow(() -> new RuntimeException("Ticket not found"));
         return mapTicketToTicketDetailResponse(ticket);

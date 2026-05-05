@@ -1,7 +1,6 @@
 package com.example.ctttriage.controller;
 
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +24,7 @@ public class TicketController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TicketDetailResponse> getById(@PathVariable UUID id) {
+    public ResponseEntity<TicketDetailResponse> getById(@PathVariable Long id) {
         return ResponseEntity.ok(ticketService.getTicket(id));
     }
     
