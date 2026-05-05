@@ -1,9 +1,8 @@
 interface NavProps {
-  active: string;
   onNavigate: (v: string) => void;
 }
 
-export function Nav({ active, onNavigate }: NavProps) {
+export function Nav({ onNavigate }: NavProps) {
   return (
     <nav>
       <button onClick={() => onNavigate('submit')}>Submit</button>

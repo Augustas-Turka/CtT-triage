@@ -8,9 +8,9 @@ export const getTickets  = () =>
 export const getComments = () =>
   fetch(`${BASE}/api/comments`).then(r => r.json()) as Promise<Comment[]>;
  
-export const postComment = (text: string) =>
+export const postComment = (body: string) =>
   fetch(`${BASE}/api/comments`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({ body }),
   }).then(r => r.json());
