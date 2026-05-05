@@ -2,7 +2,6 @@ package com.example.ctttriage.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -14,8 +13,11 @@ import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.repositories.TicketRepository;
 import com.example.ctttriage.service.CommentAnalysisService;
 import com.google.gson.JsonParser;
-import com.example.ctttriage.model.*;//all for now
-import com.example.ctttriage.dto.*;//all objects for now
+import com.example.ctttriage.model.Comment;
+import com.example.ctttriage.model.Ticket;
+import com.example.ctttriage.dto.CommentResponse;
+import com.example.ctttriage.dto.CommentReviewRequest;
+import com.example.ctttriage.dto.TicketDetailResponse;
 import com.example.ctttriage.dto.external.ExternalTicketData;
 
 
@@ -36,14 +38,13 @@ public class CommentService {
         return commentRepository.findAll().stream().map(this::mapCommentToCommentResponse).toList();
     }
 
-    public CommentResponse getComment (UUID id) {
+    public CommentResponse getComment (Long id) {
 
         Comment comment = commentRepository.findById(id).orElseThrow(() -> new RuntimeException("Comment not found"));
         return mapCommentToCommentResponse(comment);
     }
 
-    //TODO: update return type
-    public void createTickets(CommentReviewRequest request) {
+    public List<TicketDetailResponse> createTickets(CommentReviewRequest request) {
 
         Comment comment = mapCommentRequestToComment(request);
 
@@ -55,11 +56,17 @@ public class CommentService {
 
             List<ExternalTicketData> tickets = analysisService.buildTicketList(savedComment);
 
-            tickets.forEach(ticket -> {
+            List<TicketDetailResponse> ticketResponses = new ArrayList<>();
+                tickets.forEach(ticket -> {
                 Ticket entity = mapExternalTicketDataToTicket(ticket, savedComment);
-                ticketRepository.save(entity);
-        });
-        };
+                Ticket saved = ticketRepository.save(entity);
+                ticketResponses.add(mapTicketToTicketDetailResponse(saved));
+            });
+
+            return ticketResponses;
+        }
+
+        return List.of(); //As indicator that no tickets were crated
     }
 
 //mapping methods
@@ -72,6 +79,17 @@ public class CommentService {
         return response;
     }
 
+    private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
+
+        TicketDetailResponse response = new TicketDetailResponse();
+        response.setId(ticket.getId());
+        response.setTitle(ticket.getTitle());
+        response.setCategory(ticket.getCategory());
+        response.setPriority(ticket.getPriority());
+        response.setSummary(ticket.getSummary());
+        response.setSourceComment(mapCommentToCommentResponse(ticket.getSourceComment()));
+        return response;
+    }
     
 
     private Ticket mapExternalTicketDataToTicket(ExternalTicketData data, Comment comment) {

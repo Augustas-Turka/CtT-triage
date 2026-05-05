@@ -1,6 +1,6 @@
 export interface Ticket {
   id: string;
-  sourceCommentId: string;
+  sourceComment: Comment;
   title: string;
 
   //defined as enums in backend, cant see a reason to implement as enums here
