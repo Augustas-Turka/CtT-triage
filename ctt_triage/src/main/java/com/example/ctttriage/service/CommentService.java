@@ -13,8 +13,10 @@ import com.example.ctttriage.repositories.CommentRepository;
 import com.example.ctttriage.repositories.TicketRepository;
 import com.example.ctttriage.service.CommentAnalysisService;
 import com.google.gson.JsonParser;
-import com.example.ctttriage.model.*;//all for now
-import com.example.ctttriage.dto.*;//all objects for now
+import com.example.ctttriage.model.Comment;
+import com.example.ctttriage.model.Ticket;
+import com.example.ctttriage.dto.CommentResponse;
+import com.example.ctttriage.dto.CommentReviewRequest;
 import com.example.ctttriage.dto.external.ExternalTicketData;
 
 

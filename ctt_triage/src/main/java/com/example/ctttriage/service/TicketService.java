@@ -24,15 +24,15 @@ public class TicketService {
         return mapTicketToTicketDetailResponse(ticket);
     }
 
-    public List<TicketSummaryResponse> getAllTickets () {
+    public List<TicketDetailResponse> getAllTickets () {
 
-        return ticketRepository.findAll().stream().map(this::mapTicketToTicketSummaryResponse).toList();
+        return ticketRepository.findAll().stream().map(this::mapTicketToTicketDetailResponse).toList();
     }
 
     //will almost 100% change, since return should probably be a list of tickets in case 1 comment produced more than 1 ticket    
-    public TicketSummaryResponse createTicket(Ticket ticket) {
+    public TicketDetailResponse createTicket(Ticket ticket) {
         Ticket newTicket = ticketRepository.save(ticket);
-        return mapTicketToTicketSummaryResponse(newTicket);
+        return mapTicketToTicketDetailResponse(newTicket);
     }
 
 
@@ -40,7 +40,7 @@ public class TicketService {
     private TicketDetailResponse mapTicketToTicketDetailResponse(Ticket ticket){
 
         TicketDetailResponse response = new TicketDetailResponse();
-        //response.setId(ticket.getId());   not needed since using the id of this ticket to fetch this ticket?
+        response.setId(ticket.getId());
         response.setTitle(ticket.getTitle());
         response.setCategory(ticket.getCategory());
         response.setPriority(ticket.getPriority());
@@ -57,15 +57,6 @@ public class TicketService {
         return response;
     }
 
-    private TicketSummaryResponse mapTicketToTicketSummaryResponse(Ticket ticket) {
-
-        TicketSummaryResponse response = new TicketSummaryResponse();
-        response.setTitle(ticket.getTitle());
-        response.setCategory(ticket.getCategory());
-        response.setPriority(ticket.getPriority());
-        response.setSummary(ticket.getSummary());
-        return response;
-    } 
     
     
 }

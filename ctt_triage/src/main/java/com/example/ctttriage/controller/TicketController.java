@@ -6,7 +6,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.ctttriage.dto.TicketDetailResponse;
-import com.example.ctttriage.dto.TicketSummaryResponse;
 import com.example.ctttriage.service.TicketService;
 
 import lombok.RequiredArgsConstructor;
@@ -19,7 +18,7 @@ public class TicketController {
     private final TicketService ticketService;
 
     @GetMapping
-    public ResponseEntity<List<TicketSummaryResponse>> getAll() {
+    public ResponseEntity<List<TicketDetailResponse>> getAll() {
         return ResponseEntity.ok(ticketService.getAllTickets());
     }
 
