@@ -17,7 +17,7 @@ public class Ticket {
     @JoinColumn(name = "source_comments_id", nullable = false)
     private Comment sourceComment;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String title;
 
     @Enumerated(EnumType.STRING)
