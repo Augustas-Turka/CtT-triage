@@ -56,13 +56,72 @@ public class CommentAnalysisService {
         Comment: "%s"
         """;
 
+    private static final String VERIFICATION_PROMPT = """
+        You are a strict support ticket reviewer.
+        Read the following comment and decide: does it describe a real issue, bug, feature request, billing problem, or account problem that requires a support ticket?
+        If it's casual conversation, a compliment, spam, or too vague to act on — it does NOT need a ticket.
+        Respond with ONLY one word: YES (if it does require a suuport ticket) or NO.
+        Comment: "%s"
+        """;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
+
+    //using 2 models to save on api costs, first a very cheap zero-shot model, if it passes, we check again with generative model for false positives.
     public boolean shouldCommentBecomeTicket (Comment comment) {
+
         log.debug("Checking if comment [id={}] should become a ticket. Body: '{}'", comment.getId(), comment.getBody());
 
+        //first check with zero shot model. During testing I found it reliable at detecting when a comment IS NOT a support ticket
+        if(!checkWithZeroShotModel(comment.getBody())){
+            return false;
+        }
+        
+        //secondary check with generative model. During testing, I found its accuracy to be perfect
+        if(checkWithGenerativeModel(comment.getBody())){
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public List<ExternalTicketData> buildTicketList(Comment comment) {
+
+        String filledPrompt = String.format(PROMPT, comment.getBody());
+
         Map<String, Object> requestBody = Map.of(
-            "inputs", comment.getBody(),
+            "model", "Qwen/Qwen2.5-7B-Instruct:together",
+            "messages", List.of(
+                Map.of("role", "user", "content", filledPrompt)
+            )
+        );
+
+        ResponseEntity<Map> generatorResponse = restTemplate.postForEntity(
+        generatorUrl, buildEntity(requestBody), Map.class
+        );
+        log.debug("Generator raw response: {}", generatorResponse.getBody());
+
+
+        List choices = (List) generatorResponse.getBody().get("choices");
+        Map message = (Map) ((Map) choices.get(0)).get("message");
+        String apiResponse = (String) message.get("content");
+        log.debug("Extracted JSON string: {}", apiResponse);
+
+        JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
+
+        List<ExternalTicketData> tickets = new ArrayList<>();
+        for (JsonElement element : jsonArray) {
+            JsonObject json = element.getAsJsonObject();
+            tickets.add(mapJsonResponseToExternalTicketData(json));
+        }
+        
+        return tickets;
+    }
+
+    private boolean checkWithZeroShotModel (String text) {
+        Map<String, Object> requestBody = Map.of(
+            "inputs", text,
             "parameters", Map.of("candidate_labels", "this is an issue or request someone is having with the service")
         );
 
@@ -79,41 +138,31 @@ public class CommentAnalysisService {
         if (Score >= ticketThreshold){return true;}
 
         return false;
-        
     }
 
-    public List<ExternalTicketData> buildTicketList(Comment comment) {
+    private boolean checkWithGenerativeModel(String text) {
+        String filledPrompt = String.format(VERIFICATION_PROMPT, text);
 
-    String filledPrompt = String.format(PROMPT, comment.getBody());
+        Map<String, Object> requestBody = Map.of(
+            "model", "Qwen/Qwen2.5-7B-Instruct:together",
+            "messages", List.of(
+                Map.of("role", "user", "content", filledPrompt)
+            )
+        );
 
-    Map<String, Object> requestBody = Map.of(
-        "model", "Qwen/Qwen2.5-7B-Instruct:together",
-        "messages", List.of(
-            Map.of("role", "user", "content", filledPrompt)
-        )
-    );
+        ResponseEntity<Map> response = restTemplate.postForEntity(
+            generatorUrl, buildEntity(requestBody), Map.class
+        );
 
-   ResponseEntity<Map> generatorResponse = restTemplate.postForEntity(
-    generatorUrl, buildEntity(requestBody), Map.class
-    );
-    log.debug("Generator raw response: {}", generatorResponse.getBody());
+        List choices = (List) response.getBody().get("choices");
+        Map message = (Map) ((Map) choices.get(0)).get("message");
+        String answer = ((String) message.get("content")).trim().toUpperCase();
 
+        log.debug("Generator verification answer:'{}'",  answer);
 
-    List choices = (List) generatorResponse.getBody().get("choices");
-    Map message = (Map) ((Map) choices.get(0)).get("message");
-    String apiResponse = (String) message.get("content");
-    log.debug("Extracted JSON string: {}", apiResponse);
+        if (answer.equals("YES")){return true;};
 
-    
-    
-    JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
-
-    List<ExternalTicketData> tickets = new ArrayList<>();
-    for (JsonElement element : jsonArray) {
-        JsonObject json = element.getAsJsonObject();
-        tickets.add(mapJsonResponseToExternalTicketData(json));
-    }
-    return tickets;
+        return false;
     }
 
     //helpers
@@ -139,8 +188,4 @@ public class CommentAnalysisService {
         return response;
     }
 
-
-
-
-    
 }
