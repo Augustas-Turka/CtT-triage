@@ -97,7 +97,7 @@ public class CommentAnalysisService {
             )
         );
 
-        //TOOD: throw exception if call fails
+        //TODO: throw exception if call fails
         ResponseEntity<Map> generatorResponse = restTemplate.postForEntity(
         generatorUrl, buildEntity(requestBody), Map.class
         );
@@ -108,7 +108,7 @@ public class CommentAnalysisService {
         String apiResponse = (String) message.get("content");
         log.debug("Extracted JSON string: {}", apiResponse);
 
-         //TOOD: throw exception if json disfigured
+        //TODO: throw exception if json disfigured
         JsonArray jsonArray = JsonParser.parseString(apiResponse).getAsJsonArray();
 
         List<ExternalTicketData> tickets = new ArrayList<>();
@@ -128,7 +128,7 @@ public class CommentAnalysisService {
 
         log.debug("Request body: {}", requestBody);
         
-        //don't add exception throwing here, if this call fails the application with just use the secondary check for all comments
+        //don't add exception throwing here, if this call fails the application will just use the secondary check
         ResponseEntity<List> response = restTemplate.postForEntity(
             deciderUrl, buildEntity(requestBody), List.class
         );
@@ -154,12 +154,12 @@ public class CommentAnalysisService {
             )
         );
 
-        //TOOD: throw exception if call fails
+        //TODO: throw exception if call fails
         ResponseEntity<Map> response = restTemplate.postForEntity(
             generatorUrl, buildEntity(requestBody), Map.class
         );
 
-        //TOOD: throw exception if json disfigured
+        //TODO: throw exception if json disfigured
         List choices = (List) response.getBody().get("choices");
         Map message = (Map) ((Map) choices.get(0)).get("message");
         String answer = ((String) message.get("content")).trim().toUpperCase();
