@@ -66,6 +66,7 @@ curl -X POST http://localhost:8080/api/comments \
 
 - **Java 25**
 - **Spring Boot 4.0.6**
+- **H2 in-memory database**
 
 ## Prerequisites
 
@@ -81,6 +82,10 @@ curl -X POST http://localhost:8080/api/comments \
 The Docker setup uses a multi-stage builds, no need for Java and Maven.
 
 ## Run backend server locally
+
+```bash
+cd /ctt_triage
+```
 
 ### 1.0 Set environment variables
 
@@ -129,12 +134,35 @@ This repository features a secondary application, allowing the user to submit co
 ### Prerequisites
  
 ### Running with npm
-- **Node.js 20+** — [Download Node.js](https://nodejs.org/) (npm is included)
+- **Node.js 20+** - [Download Node.js](https://nodejs.org/) (npm is included)
 ### Running with Docker
-- **Docker** — [Download Docker](https://www.docker.com/get-started)
+- **Docker** - [Download Docker](https://www.docker.com/get-started)
 ---
 
-### Run
+```bash
+cd /frontend
+```
+
+
+### 1. Set environment variable
+ 
+Set the backend URL before building:
+ 
+**Mac/Linux**
+```bash
+export VITE_API_URL=http://localhost:8080
+```
+**Windows (Command Prompt)**
+```cmd
+set VITE_API_URL=http://localhost:8080
+```
+**Windows (PowerShell)**
+```powershell
+$env:VITE_API_URL="http://localhost:8080"
+```
+
+### 2. Run
+
 
 ```bash
 docker build --build-arg VITE_API_URL=$VITE_API_URL -t ctt-triage-frontend .
